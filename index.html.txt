@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Database 2026 - SMA Khalifa IMS</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- React 18 & Babel Standalone CDNs -->
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Root container for React application -->
+    <div id="root" class="min-h-screen flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // Primary Database Array based on University Database 2026 spreadsheet specs
+        const UNIVERSITY_DATABASE = [
+            {
+                id: "prog-001",
+                university: "Universitas Indonesia (UI)",
+                country: "Indonesia",
+                faculty: "Faculty of Computer Science",
+                major: "Computer Science (Ilmu Komputer)",
+                program: "S1 Reguler / IUP International",
+                track: "SNBP / SNBT / IUP Direct",
+                requirements: "High school Track: Science (IPA) / Mathematics. Min High School GPA 88/100 or UTBK Score 680+. For IUP track: IELTS min 6.0 or TOEFL iBT 75.",
+                intake: "August 2026",
+                deadline: "2026-06-15",
+                scholarship: "KIP-Kuliah Available (Reguler); Partial merit-based fee reduction for IUP top 5%.",
+                hasScholarship: true,
+                website: "https://www.ui.ac.id",
+                gpaRequirement: 3.5
+            },
+            {
+                id: "prog-002",
+                university: "Institut Teknologi Bandung (ITB)",
+                country: "Indonesia",
+                faculty: "School of Electrical Engineering and Informatics (STEI)",
+                major: "Software Engineering & AI",
+                program: "S1 International Undergraduate Program (IUP)",
+                track: "IUP",
+                requirements: "Min Math score 85+, English Proficiency Test (ELPT ITB min 125 or TOEFL iBT 79/IELTS 6.5), ITB AQmT test.",
+                intake: "August 2026",
+                deadline: "2026-05-30",
+                scholarship: "Scholarships available via Ganesha Talent Fellowship for second year.",
+                hasScholarship: true,
+                website: "https://admission.itb.ac.id",
+                gpaRequirement: 3.6
+            },
+            {
+                id: "prog-003",
+                university: "Universitas Gadjah Mada (UGM)",
+                country: "Indonesia",
+                faculty: "Faculty of Medicine, Public Health, and Nursing",
+                major: "International Program in Medicine (Medicine IUP)",
+                program: "S1 IUP Medicine",
+                track: "IUP",
+                requirements: "Science track high school. Min IELTS 6.0 / TOEFL 550. Pass GMST (Gadjah Mada Scholastic Test) and Situational Judgement Test (SJT).",
+                intake: "August 2026",
+                deadline: "2026-04-20",
+                scholarship: "Not available for Year 1 IUP (Self-funded required).",
+                hasScholarship: false,
+                website: "https://um.ugm.ac.id",
+                gpaRequirement: 3.7
+            },
+            {
+                id: "prog-004",
+                university: "National University of Singapore (NUS)",
+                country: "Singapore",
+                faculty: "School of Computing",
+                major: "Computer Science & Data Science",
+                program: "Bachelor of Computing (Hons)",
+                track: "Direct International",
+                requirements: "High School Diploma with High Academic Distinction (GPA > 3.8/4.0), SAT score 1450+ or ACT 33+, IELTS 7.0 / TOEFL 100. Strong AP/A-Level Math required.",
+                intake: "August 2026",
+                deadline: "2026-03-01",
+                scholarship: "MOE Tuition Grant (Tuition subsidy) & ASEAN Undergraduate Scholarship.",
+                hasScholarship: true,
+                website: "https://www.nus.edu.sg",
+                gpaRequirement: 3.8
+            },
+            {
+                id: "prog-005",
+                university: "Nanyang Technological University (NTU)",
+                country: "Singapore",
+                faculty: "Nanyang Business School",
+                major: "Business Administration & Analytics",
+                program: "Bachelor of Business (3-Year Direct Hons)",
+                track: "Direct International",
+                requirements: "SMA Diploma average 88%+, SAT 1400+, IELTS 6.5 / TOEFL 90. Personal Statement & Interview.",
+                intake: "August 2026",
+                deadline: "2026-03-15",
+                scholarship: "Nanyang Scholarship & ASEAN Scholarship (Full tuition + allowance).",
+                hasScholarship: true,
+                website: "https://www.ntu.edu.sg",
+                gpaRequirement: 3.7
+            },
+            {
+                id: "prog-006",
+                university: "Monash University",
+                country: "Australia",
+                faculty: "Faculty of Engineering",
+                major: "Mechanical & Robotics Engineering",
+                program: "Bachelor of Engineering (Honours)",
+                track: "Direct International",
+                requirements: "SMA 3 average 85% with Advanced Math and Physics. IELTS 6.5 (no band below 6.0) or PTE 58.",
+                intake: "February 2027",
+                deadline: "2026-11-30",
+                scholarship: "Monash International Leadership Scholarship (100% tuition waiver).",
+                hasScholarship: true,
+                website: "https://www.monash.edu",
+                gpaRequirement: 3.4
+            },
+            {
+                id: "prog-007",
+                university: "University of Melbourne",
+                country: "Australia",
+                faculty: "Faculty of Science",
+                major: "Biomedical Science",
+                program: "Bachelor of Biomedicine",
+                track: "Direct International",
+                requirements: "High school completion with high standing in Chemistry and Higher Math. IELTS 6.5 / TOEFL 79.",
+                intake: "July 2026",
+                deadline: "2026-05-15",
+                scholarship: "Melbourne International Undergraduate Scholarship (up to 100% fee remission).",
+                hasScholarship: true,
+                website: "https://unimelb.edu.au",
+                gpaRequirement: 3.6
+            },
+            {
+                id: "prog-008",
+                university: "Kyoto University",
+                country: "Japan",
+                faculty: "Faculty of Engineering",
+                major: "Civil and Environmental Engineering (iUP)",
+                program: "Kyoto iUP 4.5 Year Degree",
+                track: "Direct International",
+                requirements: "High school graduation. EJU or SAT subject tests. IELTS 6.5 or TOEFL iBT 80+. Japanese language learning foundation provided in year 1.",
+                intake: "October 2026",
+                deadline: "2026-02-15",
+                scholarship: "Kyoto iUP Scholarship (Full tuition waiver + monthly allowance JPY 120,000).",
+                hasScholarship: true,
+                website: "https://www.kyoto-u.ac.jp/en",
+                gpaRequirement: 3.5
+            },
+            {
+                id: "prog-009",
+                university: "Universitas Airlangga (UNAIR)",
+                country: "Indonesia",
+                faculty: "Faculty of Law",
+                major: "International Law (IUP)",
+                program: "Bachelor of Laws (LL.B IUP)",
+                track: "IUP",
+                requirements: "SMA Graduation certificate, English Proficiency Test (TOEFL 500+ / IELTS 5.5+), ELPT and Academic Potential Test (TPA).",
+                intake: "August 2026",
+                deadline: "2026-06-30",
+                scholarship: "Not available for international track Year 1.",
+                hasScholarship: false,
+                website: "https://unair.ac.id",
+                gpaRequirement: 3.2
+            },
+            {
+                id: "prog-010",
+                university: "BINUS University",
+                country: "Indonesia",
+                faculty: "School of Design",
+                major: "Interactive Design & Game Development",
+                program: "S1 International Program (Binus International)",
+                track: "Mandiri",
+                requirements: "SMA All Tracks. Pass Binus Entrance Test (TPM) & Portfolio submission for Design.",
+                intake: "September 2026",
+                deadline: "2026-07-15",
+                scholarship: "Widia Scholarship for top entrance exam performers (Up to 100% tuition).",
+                hasScholarship: true,
+                website: "https://binus.ac.id",
+                gpaRequirement: 3.0
+            },
+            {
+                id: "prog-011",
+                university: "University of Manchester",
+                country: "United Kingdom",
+                faculty: "Alliance Manchester Business School",
+                major: "Accounting and Finance",
+                program: "BSc (Hons) Accounting",
+                track: "Direct International",
+                requirements: "A-Levels (AAA) or SMA average 88%+ with recognized foundation year. IELTS 6.5 (minimum 6.0 each skill).",
+                intake: "September 2026",
+                deadline: "2026-01-31",
+                scholarship: "Humanitarian & Global Futures Scholarship available.",
+                hasScholarship: true,
+                website: "https://www.manchester.ac.uk",
+                gpaRequirement: 3.5
+            },
+            {
+                id: "prog-012",
+                university: "Ritsumeikan Asia Pacific University (APU)",
+                country: "Japan",
+                faculty: "College of International Management",
+                major: "International Management (BBA)",
+                program: "4-Year Undergraduate (English Basis)",
+                track: "Direct International",
+                requirements: "High school completion, IELTS 6.0 / TOEFL iBT 75, Essays & Online Video Interview.",
+                intake: "September 2026",
+                deadline: "2026-03-31",
+                scholarship: "APU Tuition Reduction Scholarship (30%, 50%, 65%, 80%, 100%).",
+                hasScholarship: true,
+                website: "https://www.apu.ac.jp",
+                gpaRequirement: 3.1
+            }
+        ];
+
+        function UniversityApp() {
+            // Filter States
+            const [query, setQuery] = useState("");
+            const [country, setCountry] = useState("");
+            const [faculty, setFaculty] = useState("");
+            const [track, setTrack] = useState("");
+            const [intake, setIntake] = useState("");
+            const [scholarshipOnly, setScholarshipOnly] = useState(false);
+
+            // UI States
+            const [sortBy, setSortBy] = useState("relevance");
+            const [layoutMode, setLayoutMode] = useState("grid");
+            const [showMobileFilters, setShowMobileFilters] = useState(false);
+            const [showSavedOnly, setShowSavedOnly] = useState(false);
+
+            // Selection & Saved States
+            const [comparedIds, setComparedIds] = useState(() => {
+                try {
+                    return JSON.parse(localStorage.getItem('ims_compare')) || [];
+                } catch { return []; }
+            });
+            const [bookmarkedIds, setBookmarkedIds] = useState(() => {
+                try {
+                    return JSON.parse(localStorage.getItem('ims_bookmark')) || [];
+                } catch { return []; }
+            });
+
+            // Modal States
+            const [activeDetailProgram, setActiveDetailProgram] = useState(null);
+            const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+
+            // Student Eligibility Calculator State
+            const [studentGpa, setStudentGpa] = useState("");
+            const [eligibilityResult, setEligibilityResult] = useState(null);
+
+            // Toast state
+            const [toasts, setToasts] = useState([]);
+
+            // Sync localStorage
+            useEffect(() => {
+                localStorage.setItem('ims_compare', JSON.stringify(comparedIds));
+            }, [comparedIds]);
+
+            useEffect(() => {
+                localStorage.setItem('ims_bookmark', JSON.stringify(bookmarkedIds));
+            }, [bookmarkedIds]);
+
+            // Toast helper
+            const addToast = (message, isWarning = false) => {
+                const id = Date.now();
+                setToasts(prev => [...prev, { id, message, isWarning }]);
+                setTimeout(() => {
+                    setToasts(prev => prev.filter(t => t.id !== id));
+                }, 3000);
+            };
+
+            // Unique Faculty list derived dynamically
+            const facultiesList = useMemo(() => {
+                return [...new Set(UNIVERSITY_DATABASE.map(p => p.faculty))].sort();
+            }, []);
+
+            // Stats counts
+            const stats = useMemo(() => {
+                const totalPrograms = UNIVERSITY_DATABASE.length;
+                const totalUnis = new Set(UNIVERSITY_DATABASE.map(p => p.university)).size;
+                const totalScholarships = UNIVERSITY_DATABASE.filter(p => p.hasScholarship).length;
+                return { totalPrograms, totalUnis, totalScholarships };
+            }, []);
+
+            const filteredPrograms = useMemo(() => {
+                return UNIVERSITY_DATABASE.filter(item => {
+                    // Saved filter mode
+                    if (showSavedOnly && !bookmarkedIds.includes(item.id)) {
+                        return false;
+                    }
+
+                    // Text Query
+                    if (query.trim()) {
+                        const q = query.toLowerCase();
+                        const matchUni = item.university.toLowerCase().includes(q);
+                        const matchFaculty = item.faculty.toLowerCase().includes(q);
+                        const matchMajor = item.major.toLowerCase().includes(q);
+                        const matchProgram = item.program.toLowerCase().includes(q);
+                        const matchReq = item.requirements.toLowerCase().includes(q);
+                        const matchScholar = item.scholarship.toLowerCase().includes(q);
+
+                        if (!matchUni && !matchFaculty && !matchMajor && !matchProgram && !matchReq && !matchScholar) {
+                            return false;
+                        }
+                    }
+
+                    if (country && item.country !== country) return false;
+                    if (faculty && item.faculty !== faculty) return false;
+                    if (track && !item.track.includes(track)) return false;
+                    if (intake && !item.intake.includes(intake)) return false;
+                    if (scholarshipOnly && !item.hasScholarship) return false;
+
+                    return true;
+                }).sort((a, b) => {
+                    if (sortBy === 'deadlineSoon') return new Date(a.deadline) - new Date(b.deadline);
+                    if (sortBy === 'uniAsc') return a.university.localeCompare(b.university);
+                    if (sortBy === 'majorAsc') return a.major.localeCompare(b.major);
+                    return 0;
+                });
+            }, [query, country, faculty, track, intake, scholarshipOnly, sortBy, showSavedOnly, bookmarkedIds]);
+
+            // Handlers
+            const clearAllFilters = () => {
+                setQuery("");
+                setCountry("");
+                setFaculty("");
+                setTrack("");
+                setIntake("");
+                setScholarshipOnly(false);
+                setShowSavedOnly(false);
+                addToast("All search filters reset.");
+            };
+
+            const toggleCompare = (id) => {
+                if (comparedIds.includes(id)) {
+                    setComparedIds(prev => prev.filter(i => i !== id));
+                    addToast("Removed program from comparison list.");
+                } else {
+                    if (comparedIds.length >= 4) {
+                        addToast("Maximum 4 programs can be compared at once.", true);
+                        return;
+                    }
+                    setComparedIds(prev => [...prev, id]);
+                    addToast("Added program to comparison list.");
+                }
+            };
+
+            const toggleBookmark = (id, e) => {
+                if (e) e.stopPropagation();
+                if (bookmarkedIds.includes(id)) {
+                    setBookmarkedIds(prev => prev.filter(i => i !== id));
+                    addToast("Removed from saved programs.");
+                } else {
+                    setBookmarkedIds(prev => [...prev, id]);
+                    addToast("Saved program to bookmarks!");
+                }
+            };
+
+            const handleCheckEligibility = () => {
+                const val = parseFloat(studentGpa);
+                if (isNaN(val) || val <= 0) {
+                    setEligibilityResult({ isError: true, message: "Please enter a valid numeric score or GPA." });
+                    return;
+                }
+                const target = activeDetailProgram ? activeDetailProgram.gpaRequirement : 3.0;
+                if (val >= target || (val > 75 && target <= 4.0)) {
+                    setEligibilityResult({ isMatch: true, message: `High Match Potential! Your score (${val}) meets or exceeds benchmark (~${target}).` });
+                } else {
+                    setEligibilityResult({ isMatch: false, message: `Moderate Match. Minimum estimated benchmark is ~${target}. Consider strengthening test scores.` });
+                }
+            };
+
+            const handleExecuteHeroSearch = (searchTerm) => {
+                setQuery(searchTerm);
+                setShowSavedOnly(false);
+                const el = document.getElementById('feedSection');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            return (
+                <div className="flex-grow flex flex-col">
+                    {/* Header */}
+                    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex items-center justify-between h-20">
+                                <div className="flex items-center space-x-4">
+                                    <button onClick={clearAllFilters} className="text-left group focus:outline-none">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="font-bold text-lg sm:text-xl text-slate-900 tracking-tight group-hover:text-brand-600 transition-colors">University Database 2026</span>
+                                            <span className="bg-brand-100 text-brand-800 text-xs px-2 py-0.5 rounded-full font-semibold border border-brand-200 hidden sm:inline-block">LRP SS12</span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 font-medium">SMA Khalifa IMS • Life Readiness Project (LRP) University Exploration Program (2025/2026)</p>
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center space-x-3">
+                                    <button 
+                                        onClick={() => {
+                                            if (comparedIds.length === 0) {
+                                                addToast("Select at least 1 program to compare.", true);
+                                                return;
+                                            }
+                                            setIsCompareModalOpen(true);
+                                        }} 
+                                        className="relative inline-flex items-center px-3.5 py-2 text-sm font-medium rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    >
+                                        <i className="fa-solid fa-code-compare mr-2 text-brand-600"></i>
+                                        <span className="hidden md:inline">Compare</span>
+                                        <span className="ml-2 bg-brand-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">{comparedIds.length}</span>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => {
+                                            if (!showSavedOnly && bookmarkedIds.length === 0) {
+                                                addToast("No saved programs yet. Click the bookmark icon to save programs.", true);
+                                                return;
+                                            }
+                                            setShowSavedOnly(!showSavedOnly);
+                                        }} 
+                                        className={`relative inline-flex items-center px-3.5 py-2 text-sm font-medium rounded-lg transition-colors ${showSavedOnly ? 'bg-amber-500 text-white' : 'text-slate-700 bg-slate-100 hover:bg-slate-200'}`}
+                                    >
+                                        <i className={`fa-solid fa-bookmark mr-2 ${showSavedOnly ? 'text-white' : 'text-amber-500'}`}></i>
+                                        <span className="hidden md:inline">{showSavedOnly ? 'All Programs' : 'Saved'}</span>
+                                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold ${showSavedOnly ? 'bg-white text-amber-600' : 'bg-amber-500 text-white'}`}>{bookmarkedIds.length}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {}
+                    <section className="bg-gradient-to-b from-brand-900 via-brand-800 to-slate-900 text-white py-14 px-4 sm:px-6 lg:px-8 shadow-inner">
+                        <div className="max-w-4xl mx-auto text-center space-y-6">
+                            <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-medium text-brand-100 border border-white/20">
+                                <i className="fa-solid fa-graduation-cap text-amber-400"></i>
+                                <span>LRP University Exploration 2026</span>
+                            </div>
+                            
+                            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                                Find Your Future Academic Path
+                            </h1>
+                            
+                            <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                                Search verified university programs, admission requirements, intake dates, and scholarship opportunities directly compiled by SS12 Students.
+                            </p>
+
+                            {/* Hero Search Bar */}
+                            <div className="relative max-w-3xl mx-auto pt-2">
+                                <div className="relative flex items-center shadow-2xl rounded-2xl overflow-hidden bg-white">
+                                    <div className="pl-5 pr-2 text-slate-400">
+                                        <i className="fa-solid fa-magnifying-glass text-xl"></i>
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search by faculty, major, program, or university name..." 
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleExecuteHeroSearch(query)}
+                                        className="w-full py-4 pl-2 pr-4 text-slate-900 text-base placeholder-slate-400 focus:outline-none focus:ring-0 border-none"
+                                    />
+                                    <div className="pr-2">
+                                        <button 
+                                            onClick={() => handleExecuteHeroSearch(query)} 
+                                            className="bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition-all shadow-md flex items-center space-x-2"
+                                        >
+                                            <span>Search</span>
+                                            <i className="fa-solid fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Popular Search Quick Chips */}
+                            <div className="pt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-300">
+                                <span className="text-slate-400 font-medium mr-1"><i class="fa-solid fa-fire text-amber-400 mr-1"></i> Popular Searches:</span>
+                                {["Computer Science", "Medicine", "Business & Economics", "IUP Programs", "Full Scholarships"].map((tag) => (
+                                    <button 
+                                        key={tag}
+                                        onClick={() => handleExecuteHeroSearch(tag)} 
+                                        className="bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-lg border border-white/10 transition-colors"
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Stats Strip */}
+                    <div className="bg-white border-b border-slate-200 py-4 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-x divide-slate-100">
+                                <div>
+                                    <span className="block text-xl font-bold text-slate-900">{stats.totalPrograms}</span>
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider">Programs Indexed</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xl font-bold text-slate-900">{stats.totalUnis}</span>
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider">Universities</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xl font-bold text-brand-600">{stats.totalScholarships}</span>
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider">Scholarship Options</span>
+                                </div>
+                                <div>
+                                    <span className="block text-xl font-bold text-emerald-600">2026/2027</span>
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider">Intake Cycle</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div id="feedSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+                        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+                            
+                            {}
+                            <aside className="lg:col-span-1 mb-6 lg:mb-0">
+                                <div className="lg:hidden mb-4 flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <span className="font-semibold text-slate-900 flex items-center">
+                                        <i className="fa-solid fa-sliders text-brand-600 mr-2"></i> Filter Programs
+                                    </span>
+                                    <button 
+                                        onClick={() => setShowMobileFilters(!showMobileFilters)} 
+                                        className="text-sm bg-brand-50 text-brand-700 px-3 py-1.5 rounded-lg font-medium border border-brand-200"
+                                    >
+                                        {showMobileFilters ? "Hide Filters" : "Show Filters"}
+                                    </button>
+                                </div>
+
+                                <div className={`${showMobileFilters ? 'block' : 'hidden'} lg:block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm sticky top-28 space-y-6`}>
+                                    <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                                        <h2 className="text-lg font-bold text-slate-900 flex items-center">
+                                            <i className="fa-solid fa-filter text-brand-600 mr-2.5"></i> Filters
+                                        </h2>
+                                        <button onClick={clearAllFilters} className="text-xs text-slate-500 hover:text-brand-600 font-medium underline flex items-center">
+                                            <i className="fa-solid fa-rotate-left mr-1"></i> Clear All
+                                        </button>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Location / Region</label>
+                                        <select value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                                            <option value="">All Locations</option>
+                                            <option value="Indonesia">Indonesia</option>
+                                            <option value="Singapore">Singapore</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="Japan">Japan</option>
+                                            <option value="United Kingdom">United Kingdom</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Faculty */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Faculty / Field</label>
+                                        <select value={faculty} onChange={(e) => setFaculty(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                                            <option value="">All Faculties</option>
+                                            {facultiesList.map(f => (
+                                                <option key={f} value={f}>{f}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Track */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Admission Track</label>
+                                        <select value={track} onChange={(e) => setTrack(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                                            <option value="">All Admission Tracks</option>
+                                            <option value="SNBP">SNBP (Prestasi / National)</option>
+                                            <option value="SNBT">SNBT (Tes / UTBK)</option>
+                                            <option value="IUP">IUP (International Undergraduate)</option>
+                                            <option value="Direct International">Direct International Entry</option>
+                                            <option value="Mandiri">Seleksi Mandiri PTN</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Scholarship */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Scholarships</label>
+                                        <label className="flex items-center text-sm text-slate-700 cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={scholarshipOnly} 
+                                                onChange={(e) => setScholarshipOnly(e.target.checked)} 
+                                                className="rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4"
+                                            />
+                                            <span className="ml-2">Scholarships Available</span>
+                                        </label>
+                                    </div>
+
+                                    {/* Intake */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Admission Intake</label>
+                                        <select value={intake} onChange={(e) => setIntake(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl p-2.5 focus:ring-brand-500 focus:border-brand-500">
+                                            <option value="">All Intakes</option>
+                                            <option value="2026">2026 Intake</option>
+                                            <option value="2027">2027 Intake</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="bg-brand-50 p-3.5 rounded-xl border border-brand-100 text-xs text-brand-800 space-y-1">
+                                        <p className="font-semibold flex items-center">
+                                            <i className="fa-solid fa-circle-info mr-1.5 text-brand-600"></i> Counselor Note
+                                        </p>
+                                        <p className="text-slate-600">Life Readiness Project (LRP) University Exploration database created by SS12 Students A.Y. 2025/2026.</p>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            {}
+                            <section className="lg:col-span-3 space-y-6">
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div className="relative w-full md:w-1/2">
+                                        <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Filter results by keyword, major, university..." 
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        />
+                                        {query && (
+                                            <button onClick={() => setQuery("")} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+                                                <i className="fa-solid fa-xmark text-xs"></i>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between w-full md:w-auto space-x-3">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Sort by:</span>
+                                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl p-2 font-medium focus:ring-brand-500">
+                                                <option value="relevance">Relevance</option>
+                                                <option value="deadlineSoon">Deadline (Soonest)</option>
+                                                <option value="uniAsc">University (A-Z)</option>
+                                                <option value="majorAsc">Major (A-Z)</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                            <button 
+                                                onClick={() => setLayoutMode('grid')} 
+                                                className={`p-1.5 rounded-lg text-xs ${layoutMode === 'grid' ? 'text-slate-700 bg-white shadow-xs font-semibold' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <i className="fa-solid fa-grip-vertical"></i>
+                                            </button>
+                                            <button 
+                                                onClick={() => setLayoutMode('list')} 
+                                                className={`p-1.5 rounded-lg text-xs ${layoutMode === 'list' ? 'text-slate-700 bg-white shadow-xs font-semibold' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <i className="fa-solid fa-list-ul"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Active Filter Chips */}
+                                {(query || country || faculty || track || intake || scholarshipOnly || showSavedOnly) && (
+                                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                                        {showSavedOnly && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full">
+                                                Showing Saved Only
+                                                <button onClick={() => setShowSavedOnly(false)} className="ml-1.5 text-amber-500 hover:text-amber-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                        {query && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 px-3 py-1 rounded-full">
+                                                Search: "{query}"
+                                                <button onClick={() => setQuery("")} className="ml-1.5 text-brand-500 hover:text-brand-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                        {country && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 px-3 py-1 rounded-full">
+                                                Country: {country}
+                                                <button onClick={() => setCountry("")} className="ml-1.5 text-brand-500 hover:text-brand-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                        {faculty && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 px-3 py-1 rounded-full">
+                                                Faculty: {faculty}
+                                                <button onClick={() => setFaculty("")} className="ml-1.5 text-brand-500 hover:text-brand-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                        {track && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 px-3 py-1 rounded-full">
+                                                Track: {track}
+                                                <button onClick={() => setTrack("")} className="ml-1.5 text-brand-500 hover:text-brand-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                        {scholarshipOnly && (
+                                            <span className="inline-flex items-center text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 px-3 py-1 rounded-full">
+                                                Scholarships Only
+                                                <button onClick={() => setScholarshipOnly(false)} className="ml-1.5 text-brand-500 hover:text-brand-800"><i className="fa-solid fa-xmark"></i></button>
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Results Header */}
+                                <div className="flex items-center justify-between text-sm text-slate-600 font-medium">
+                                    <span>Showing {filteredPrograms.length} matching program{filteredPrograms.length !== 1 ? 's' : ''}</span>
+                                    <span className="text-xs text-slate-400 font-normal">Source: SMA Khalifa IMS 2026 DB</span>
+                                </div>
+
+                                {}
+                                {filteredPrograms.length === 0 ? (
+                                    <div className="bg-white p-12 rounded-2xl border border-dashed border-slate-300 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                                            <i className="fa-solid fa-folder-open"></i>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-900">No Matching Universities or Programs Found</h3>
+                                        <p className="text-slate-500 text-sm max-w-md mx-auto">
+                                            Try adjusting your filters, clearing keywords, or searching for broader terms like "Engineering", "Business", or "Indonesia".
+                                        </p>
+                                        <button onClick={clearAllFilters} className="inline-flex items-center px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 shadow-sm transition-colors">
+                                            <i className="fa-solid fa-rotate-left mr-2"></i> Reset Search Filters
+                                        </button>
+                                    </div>
+                                ) : layoutMode === 'grid' ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {filteredPrograms.map(item => {
+                                            const isCompared = comparedIds.includes(item.id);
+                                            const isBookmarked = bookmarkedIds.includes(item.id);
+                                            return (
+                                                <div key={item.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group">
+                                                    <div>
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-md border border-slate-200">
+                                                                    <i className="fa-solid fa-earth-americas text-brand-600 mr-1"></i> {item.country}
+                                                                </span>
+                                                                <span className="bg-brand-50 text-brand-700 text-xs font-semibold px-2.5 py-0.5 rounded-md border border-brand-100">
+                                                                    {item.track}
+                                                                </span>
+                                                            </div>
+                                                            <button onClick={(e) => toggleBookmark(item.id, e)} className="text-slate-300 hover:text-amber-500 transition-colors p-1" title="Save Program">
+                                                                <i className={`fa-solid fa-bookmark text-base ${isBookmarked ? 'text-amber-500' : ''}`}></i>
+                                                            </button>
+                                                        </div>
+
+                                                        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand-600 transition-colors">
+                                                            {item.major}
+                                                        </h3>
+                                                        <p className="text-xs font-semibold text-slate-500 mt-1 flex items-center">
+                                                            <i className="fa-solid fa-building-columns mr-1.5 text-slate-400"></i> {item.university}
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 mt-0.5">{item.faculty}</p>
+
+                                                        <div className="mt-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-600 space-y-1.5">
+                                                            <div className="font-medium text-slate-700 flex items-center">
+                                                                <i className="fa-solid fa-graduation-cap text-brand-500 mr-1.5"></i> Minimum Entry:
+                                                            </div>
+                                                            <p className="line-clamp-2 text-slate-600">{item.requirements}</p>
+                                                        </div>
+
+                                                        <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                                                            <div>
+                                                                <span className="text-slate-400 block font-medium">Intake Date</span>
+                                                                <span className="font-semibold text-slate-700">{item.intake}</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-slate-400 block font-medium">Application Deadline</span>
+                                                                <span className="font-bold text-rose-600">{item.deadline}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-3">
+                                                            {item.hasScholarship ? (
+                                                                <span className="inline-flex items-center text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                                                                    <i className="fa-solid fa-circle-check mr-1.5 text-emerald-500"></i> {item.scholarship.length > 35 ? item.scholarship.substring(0, 35) + '...' : item.scholarship}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                                                    <i className="fa-solid fa-circle-xmark mr-1.5 text-slate-400"></i> Self-funded
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between space-x-2">
+                                                        <button 
+                                                            onClick={() => toggleCompare(item.id)} 
+                                                            className={`flex-1 py-2 px-3 text-xs font-semibold rounded-xl border transition-colors flex items-center justify-center space-x-1 ${isCompared ? 'bg-brand-600 text-white border-brand-600' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}
+                                                        >
+                                                            <i className="fa-solid fa-code-compare text-xs"></i>
+                                                            <span>{isCompared ? 'Added' : 'Compare'}</span>
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => {
+                                                                setActiveDetailProgram(item);
+                                                                setStudentGpa("");
+                                                                setEligibilityResult(null);
+                                                            }} 
+                                                            className="flex-1 py-2 px-3 text-xs font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors flex items-center justify-center space-x-1"
+                                                        >
+                                                            <span>Details</span>
+                                                            <i className="fa-solid fa-chevron-right text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredPrograms.map(item => {
+                                            const isCompared = comparedIds.includes(item.id);
+                                            const isBookmarked = bookmarkedIds.includes(item.id);
+                                            return (
+                                                <div key={item.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                                    <div className="space-y-1 max-w-xl">
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-0.5 rounded border border-slate-200">{item.country}</span>
+                                                            <span className="bg-brand-50 text-brand-700 text-xs font-medium px-2 py-0.5 rounded">{item.track}</span>
+                                                            <span className="text-xs font-bold text-rose-600">Deadline: {item.deadline}</span>
+                                                        </div>
+                                                        <h3 className="text-base font-bold text-slate-900">{item.major}</h3>
+                                                        <p className="text-xs text-slate-600 font-medium">{item.university} • <span className="text-slate-400">{item.faculty}</span></p>
+                                                    </div>
+
+                                                    <div className="flex items-center space-x-3 w-full md:w-auto justify-end">
+                                                        <button onClick={(e) => toggleBookmark(item.id, e)} className="p-2 text-slate-400 hover:text-amber-500">
+                                                            <i className={`fa-solid fa-bookmark ${isBookmarked ? 'text-amber-500' : ''}`}></i>
+                                                        </button>
+                                                        <button onClick={() => toggleCompare(item.id)} className={`px-3 py-2 text-xs font-semibold rounded-xl border ${isCompared ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                                                            {isCompared ? 'Added' : 'Compare'}
+                                                        </button>
+                                                        <button onClick={() => { setActiveDetailProgram(item); setStudentGpa(""); setEligibilityResult(null); }} className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 text-white hover:bg-slate-800">
+                                                            View Program
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </section>
+                        </div>
+                    </div>
+
+                    {}
+                    {activeDetailProgram && (
+                        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6">
+                            <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-100 transform transition-all">
+                                <div className="bg-gradient-to-r from-brand-900 to-brand-700 text-white p-6 sm:p-8 relative">
+                                    <button onClick={() => setActiveDetailProgram(null)} className="absolute top-5 right-5 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition-colors">
+                                        <i className="fa-solid fa-xmark text-lg"></i>
+                                    </button>
+                                    <div className="flex items-center space-x-3 mb-2">
+                                        <span className="bg-amber-400 text-slate-900 text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                                            {activeDetailProgram.country}
+                                        </span>
+                                        <span className="bg-white/20 text-white text-xs px-2.5 py-0.5 rounded-md font-medium">
+                                            {activeDetailProgram.track}
+                                        </span>
+                                    </div>
+                                    <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{activeDetailProgram.major}</h2>
+                                    <p className="text-brand-100 text-base sm:text-lg font-medium mt-1 flex items-center">
+                                        <i className="fa-solid fa-building-columns mr-2 text-amber-300"></i> {activeDetailProgram.university}
+                                    </p>
+                                </div>
+
+                                <div className="p-6 sm:p-8 overflow-y-auto space-y-6 custom-scrollbar flex-grow">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                                        <div>
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Faculty</span>
+                                            <span className="text-sm font-bold text-slate-800">{activeDetailProgram.faculty}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Intake Date</span>
+                                            <span className="text-sm font-bold text-slate-800">{activeDetailProgram.intake}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Deadline</span>
+                                            <span className="text-sm font-bold text-rose-600">{activeDetailProgram.deadline}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-xs font-semibold text-slate-400 uppercase">Scholarships</span>
+                                            <span className="text-sm font-bold text-emerald-600">{activeDetailProgram.hasScholarship ? 'Available' : 'Self-Funded'}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h3 className="text-base font-bold text-slate-900 flex items-center">
+                                            <i className="fa-solid fa-clipboard-check text-brand-600 mr-2"></i> Entry & Admission Requirements
+                                        </h3>
+                                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-sm text-slate-700 leading-relaxed">
+                                            {activeDetailProgram.requirements || 'Information not specified in current database.'}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h3 className="text-base font-bold text-slate-900 flex items-center">
+                                            <i className="fa-solid fa-award text-amber-500 mr-2"></i> Financial Support & Scholarships
+                                        </h3>
+                                        <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/80 text-sm text-amber-900 leading-relaxed">
+                                            {activeDetailProgram.scholarship || 'No scholarship details listed for this program.'}
+                                        </div>
+                                    </div>
+
+                                    {/* Score Match Checker */}
+                                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 rounded-2xl space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center">
+                                                <i className="fa-solid fa-calculator mr-1.5"></i> Student Eligibility Quick Checker
+                                            </span>
+                                            <span className="text-xs text-slate-400">SMA Khalifa Student Helper</span>
+                                        </div>
+                                        <p className="text-xs text-slate-300">Enter your high school GPA / predicted score to compare against minimum standards.</p>
+                                        <div className="flex items-center space-x-3">
+                                            <input 
+                                                type="number" 
+                                                step="0.1" 
+                                                value={studentGpa}
+                                                onChange={(e) => setStudentGpa(e.target.value)}
+                                                placeholder="Your GPA (e.g. 3.7 or 88)" 
+                                                className="w-1/2 bg-white/10 border border-white/20 text-white text-xs rounded-xl p-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400 placeholder-slate-400"
+                                            />
+                                            <button 
+                                                onClick={handleCheckEligibility} 
+                                                className="w-1/2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2.5 px-3 rounded-xl transition-colors"
+                                            >
+                                                Check Match
+                                            </button>
+                                        </div>
+                                        {eligibilityResult && (
+                                            <div className={`text-xs font-medium p-2.5 rounded-lg ${eligibilityResult.isError ? 'bg-rose-500/20 text-rose-200 border border-rose-500/30' : eligibilityResult.isMatch ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-200 border border-amber-500/30'}`}>
+                                                {eligibilityResult.message}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-center space-x-2">
+                                        <button 
+                                            onClick={() => toggleCompare(activeDetailProgram.id)} 
+                                            className="inline-flex items-center px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl transition-colors"
+                                        >
+                                            <i className="fa-solid fa-code-compare mr-1.5"></i>
+                                            {comparedIds.includes(activeDetailProgram.id) ? 'Remove Compare' : 'Add to Compare'}
+                                        </button>
+                                        <button 
+                                            onClick={(e) => toggleBookmark(activeDetailProgram.id, e)} 
+                                            className="inline-flex items-center px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl transition-colors"
+                                        >
+                                            <i className="fa-solid fa-bookmark mr-1.5"></i>
+                                            {bookmarkedIds.includes(activeDetailProgram.id) ? 'Unsave' : 'Save Program'}
+                                        </button>
+                                    </div>
+                                    <a 
+                                        href={activeDetailProgram.website} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="inline-flex items-center px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+                                    >
+                                        <span>Visit Official Website</span>
+                                        <i className="fa-solid fa-arrow-up-right-from-square ml-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {}
+                    {isCompareModalOpen && (
+                        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6">
+                            <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-hidden flex flex-col shadow-2xl border border-slate-100">
+                                <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
+                                    <div>
+                                        <h2 class="text-xl font-bold flex items-center">
+                                            <i className="fa-solid fa-code-compare text-brand-400 mr-2.5"></i> Program Side-by-Side Comparison
+                                        </h2>
+                                        <p className="text-xs text-slate-400">Comparing selected choices from SMA Khalifa IMS Database</p>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                        <button onClick={() => setComparedIds([])} className="text-xs text-rose-400 hover:text-rose-300 underline font-medium">Clear All</button>
+                                        <button onClick={() => setIsCompareModalOpen(false)} className="text-slate-400 hover:text-white bg-white/10 rounded-full w-8 h-8 flex items-center justify-center">
+                                            <i className="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 overflow-x-auto overflow-y-auto custom-scrollbar flex-grow">
+                                    {comparedIds.length === 0 ? (
+                                        <p className="text-center text-slate-500 py-8">No programs selected for comparison.</p>
+                                    ) : (
+                                        <table className="w-full text-left border-collapse text-xs">
+                                            <thead>
+                                                <tr className="border-b border-slate-200">
+                                                    <th className="p-3 font-bold text-slate-400 uppercase tracking-wider w-36 bg-slate-50">Criteria</th>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <th key={p.id} className="p-4 font-bold text-slate-900 border-l border-slate-200 min-w-[220px]">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm font-extrabold text-brand-700">{p.major}</span>
+                                                                <button onClick={() => toggleCompare(p.id)} className="text-slate-400 hover:text-rose-500"><i className="fa-solid fa-trash-can"></i></button>
+                                                            </div>
+                                                            <span className="block text-xs font-medium text-slate-500 mt-1">{p.university}</span>
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Country & Track</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200"><span className="font-semibold text-slate-800">{p.country}</span> ({p.track})</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Faculty</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200 text-slate-700">{p.faculty}</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Application Deadline</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200 font-bold text-rose-600">{p.deadline}</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Intake Term</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200 text-slate-800 font-semibold">{p.intake}</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Entry Requirements</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200 text-slate-600 leading-relaxed">{p.requirements}</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Scholarships</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200 text-emerald-700 font-medium">{p.scholarship}</td>
+                                                    ))}
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-3 font-bold text-slate-700 bg-slate-50">Official Website</td>
+                                                    {UNIVERSITY_DATABASE.filter(p => comparedIds.includes(p.id)).map(p => (
+                                                        <td key={p.id} className="p-4 border-l border-slate-200">
+                                                            <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline font-bold flex items-center">
+                                                                Visit Site <i className="fa-solid fa-arrow-up-right-from-square ml-1 text-2xs"></i>
+                                                            </a>
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+
+                                <div className="p-4 bg-slate-50 border-t border-slate-200 text-right">
+                                    <button onClick={() => setIsCompareModalOpen(false)} className="px-5 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-900">Close Comparison</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Toast Notification Bar */}
+                    <div className="fixed top-24 right-5 z-50 flex flex-col space-y-2 pointer-events-none">
+                        {toasts.map(t => (
+                            <div 
+                                key={t.id} 
+                                className={`pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold border transform transition-all duration-300 ${t.isWarning ? 'bg-amber-900 text-amber-100 border-amber-700' : 'bg-slate-900 text-white border-slate-700'}`}
+                            >
+                                <i className={`fa-solid ${t.isWarning ? 'fa-triangle-exclamation text-amber-400' : 'fa-circle-check text-emerald-400'}`}></i>
+                                <span>{t.message}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {}
+                    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-16">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="font-bold text-white text-base">SMA Khalifa IMS</h3>
+                                        <p className="text-xs text-slate-400">Life Readiness Project (LRP)</p>
+                                    </div>
+                                    <p className="text-xs text-slate-400 leading-relaxed">
+                                        LRP University Exploration Program. University database created by SS12 Students A.Y. 2025/2026.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Campus Contact</h4>
+                                    <p className="text-xs text-slate-400 leading-relaxed flex items-start">
+                                        <i className="fa-solid fa-location-dot text-brand-400 mr-2 mt-0.5"></i>
+                                        <span>Jl. Raya Tentara Pelajar No.75 Kampung Lio, Tangerang Selatan, Banten, 15228</span>
+                                    </p>
+                                    <p className="text-xs text-slate-400 flex items-center">
+                                        <i className="fa-solid fa-envelope text-brand-400 mr-2"></i> nerisa@khalifaims.sch.id
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Official Channels</h4>
+                                    <a href="https://instagram.com/smakhalifaims" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 text-xs text-amber-400 hover:text-amber-300 font-medium">
+                                        <i className="fa-brands fa-instagram text-base"></i>
+                                        <span>@smakhalifaims</span>
+                                    </a>
+                                    <div className="pt-2">
+                                        <span className="inline-block bg-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-lg border border-slate-700">
+                                            Source Spreadsheet Version: 2026.1
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+                                <p>&copy; 2026 SMA Khalifa IMS. All rights reserved.</p>
+                                <p className="mt-2 sm:mt-0">Designed for SS12 Guidance & University Placement</p>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<UniversityApp />);
+    </script>
+</body>
+</html>
